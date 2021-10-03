@@ -23,7 +23,8 @@ export const getSubmitForm = e => {
   e.preventDefault();
   clearGallery();
   page = 1;
-  inputValue = e.target.elements.query.value;
+  inputValue = e.target.elements.query.value.trim();
+  console.log(inputValue);
   if (inputValue.length === 0) {
     return Notiflix.Notify.warning(
       'Sorry, there are no images matching your search query. Please try again.',
@@ -33,11 +34,26 @@ export const getSubmitForm = e => {
   if (inputValue.length) {
     apiService(inputValue, page, API_KEY)
       .then(images => {
-        images.length > 0
-          ? (refs.button.style.display = 'block')
-          : (refs.button.style.display = 'none');
-        markupTpl(images);
-        Notiflix.Notify.success(`Cool! We found many popular images.`);
+        if (images.length === 0) {
+          refs.button.style.display = 'none'
+        } else if (images.length >= 12) {
+          refs.button.style.display = 'block'
+          markupTpl(images);
+          Notiflix.Notify.success(`Cool! We found many popular images.`);
+          
+        } else {
+          
+          markupTpl(images);
+          refs.button.style.display = 'none'
+          error({ text: 'Больше нет картинок по запросу!' });
+        }
+
+      
+        // images.length > 0
+        //   ? (refs.button.style.display = 'block')
+        //   : (refs.button.style.display = 'none');
+        // markupTpl(images);
+        // Notiflix.Notify.success(`Cool! We found many popular images.`);
       })
       .catch(error => console.log('Oops, something went wrong', error.message));
   }
@@ -70,15 +86,11 @@ refs.form.addEventListener('submit', getSubmitForm);
 refs.button.addEventListener('click', moreImages);
 
 function scrollPage() {
-  try {
-    setTimeout(() => {
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        left: 0,
-        behavior: 'smooth',
-      });
-    }, 1000);
-  } catch (error) {
-    console.log('Something went wrong', error.message);
-  }
+ setTimeout(() => {
+        refs.galleryList.scrollIntoView({
+            behavior: 'smooth',
+          block: 'end',
+            
+        });
+    }, 500);
 }
